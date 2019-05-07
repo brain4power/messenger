@@ -2,6 +2,7 @@ import json
 import socket
 import select
 import logging
+import threading
 
 from yaml import load, Loader
 from argparse import ArgumentParser
@@ -50,6 +51,16 @@ logging.basicConfig(
 requests = []
 connections = []
 
+
+def read_client_data(client, requests, buffersize):
+    b_request = client.recv(buffersize)
+    requests.append(b_request)
+
+
+def write_client_data(client):
+    client.send(b_response)
+
+
 try:
     sock = socket.socket()
     sock.bind((host, port))
@@ -69,16 +80,23 @@ try:
             connections, connections, connections, 0
         )
 
-        for w_client in rlist:
-            b_request = w_client.recv(buffersize)
-            requests.append(b_request)
+        for r_client in rlist:
+            thread = threading.Thread(
+                target=read_client_data,
+                args=(r_client, requests, buffersize)
+            )
+            thread.start()
 
         if requests:
             b_request = requests.pop()
             b_response = handle_default_request(b_request)
 
-            for r_client in wlist:
-                r_client.send(b_response)
-        
+            for w_client in wlist:
+                thread = threading.Thread(
+                    target=write_client_data,
+                    args=(w_client,)
+                )
+                thread.start()
+
 except KeyboardInterrupt:
     logging.info('Client closed')
