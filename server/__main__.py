@@ -89,14 +89,15 @@ try:
 
         if requests:
             b_request = requests.pop()
-            b_response = handle_default_request(b_request)
+            if b_request:
+                b_response = handle_default_request(b_request)
 
-            for w_client in wlist:
-                thread = threading.Thread(
-                    target=write_client_data,
-                    args=(w_client,)
-                )
-                thread.start()
+                for w_client in wlist:
+                    thread = threading.Thread(
+                        target=write_client_data,
+                        args=(w_client,)
+                    )
+                    thread.start()
 
 except KeyboardInterrupt:
     logging.info('Server closed')
