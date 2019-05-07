@@ -99,4 +99,4 @@ try:
                 thread.start()
 
 except KeyboardInterrupt:
-    logging.info('Client closed')
+    logging.info('Server closed')
