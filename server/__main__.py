@@ -48,56 +48,120 @@ logging.basicConfig(
     ]
 )
 
-requests = []
-connections = []
 
+class Server:
+    def __init__(self, host, port, buffersize):
+        self.requests = []
+        self.connections = []
+        self.host = host
+        self.port = port
+        self.buffersize = buffersize
 
-def read_client_data(client, requests, buffersize):
-    b_request = client.recv(buffersize)
-    requests.append(b_request)
+    def run_server(self):
 
+        def read_client_data(client, requests, buffersize):
+            b_request = client.recv(buffersize)
+            requests.append(b_request)
 
-def write_client_data(client):
-    client.send(b_response)
+        def write_client_data(client, b_response):
+            client.send(b_response)
 
-
-try:
-    sock = socket.socket()
-    sock.bind((host, port))
-    sock.settimeout(0)
-    sock.listen(5)
-    logging.info(f'Server started with { host }:{ port }')
-
-    while True:
         try:
-            client, address = sock.accept()
-            logging.info(f'Client detected { address }')
-            connections.append(client)
-        except Exception:
-            pass
+            self.sock = socket.socket()
+            self.sock.bind((self.host, self.port))
+            self.sock.settimeout(0)
+            self.sock.listen(5)
+            logging.info(f'Server started with { host }:{ port }')
 
-        rlist, wlist, xlist = select.select(
-            connections, connections, connections, 0
-        )
+            while True:
+                try:
+                    client, address = self.sock.accept()
+                    logging.info(f'Client detected { address }')
+                    self.connections.append(client)
+                except Exception:
+                    pass
 
-        for r_client in rlist:
-            thread = threading.Thread(
-                target=read_client_data,
-                args=(r_client, requests, buffersize)
-            )
-            thread.start()
+                rlist, wlist, xlist = select.select(
+                    self.connections, self.connections, self.connections, 0
+                )
 
-        if requests:
-            b_request = requests.pop()
-            if b_request:
-                b_response = handle_default_request(b_request)
-
-                for w_client in wlist:
+                for r_client in rlist:
                     thread = threading.Thread(
-                        target=write_client_data,
-                        args=(w_client,)
+                        target=read_client_data,
+                        args=(r_client, self.requests, self.buffersize)
                     )
                     thread.start()
 
-except KeyboardInterrupt:
-    logging.info('Server closed')
+                if self.requests:
+                    b_request = self.requests.pop()
+                    if b_request:
+                        b_response = handle_default_request(b_request)
+
+                        for w_client in wlist:
+                            thread = threading.Thread(
+                                target=write_client_data,
+                                args=(w_client, b_response)
+                            )
+                            thread.start()
+
+        except KeyboardInterrupt:
+            logging.info('Server closed')
+
+
+if __name__ == '__main__':
+    server = Server(host, port, buffersize)
+    server.run_server()
+
+# requests = []
+# connections = []
+#
+#
+# def read_client_data(client, requests, buffersize):
+#     b_request = client.recv(buffersize)
+#     requests.append(b_request)
+#
+#
+# def write_client_data(client):
+#     client.send(b_response)
+#
+#
+# try:
+#     sock = socket.socket()
+#     sock.bind((host, port))
+#     sock.settimeout(0)
+#     sock.listen(5)
+#     logging.info(f'Server started with { host }:{ port }')
+#
+#     while True:
+#         try:
+#             client, address = sock.accept()
+#             logging.info(f'Client detected { address }')
+#             connections.append(client)
+#         except Exception:
+#             pass
+#
+#         rlist, wlist, xlist = select.select(
+#             connections, connections, connections, 0
+#         )
+#
+#         for r_client in rlist:
+#             thread = threading.Thread(
+#                 target=read_client_data,
+#                 args=(r_client, requests, buffersize)
+#             )
+#             thread.start()
+#
+#         if requests:
+#             b_request = requests.pop()
+#             if b_request:
+#                 b_response = handle_default_request(b_request)
+#
+#                 for w_client in wlist:
+#                     thread = threading.Thread(
+#                         target=write_client_data,
+#                         args=(w_client,)
+#                     )
+#                     thread.start()
+#
+# except KeyboardInterrupt:
+#     logging.info('Server closed')
