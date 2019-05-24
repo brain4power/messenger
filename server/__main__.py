@@ -10,6 +10,8 @@ from argparse import ArgumentParser
 from handlers import handle_default_request
 import settings
 
+from verifiers.server_verifier import ServerVerifier
+
 from settings import (
     ENCODING_NAME, HOST,
     PORT, BUFFERSIZE
@@ -49,7 +51,7 @@ logging.basicConfig(
 )
 
 
-class Server:
+class Server(metaclass=ServerVerifier):
     def __init__(self, host, port, buffersize):
         self.requests = []
         self.connections = []
