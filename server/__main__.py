@@ -58,7 +58,6 @@ class Server(metaclass=ServerVerifier):
         self.requests = []
         self.connections = []
         self.host = host
-        # self.port = PortVerifier()
         self.buffersize = buffersize
 
     def run_server(self, port=None):
@@ -73,15 +72,15 @@ class Server(metaclass=ServerVerifier):
             client.send(b_response)
 
         try:
-            self.sock = socket.socket()
-            self.sock.bind((self.host, self.port))
-            self.sock.settimeout(0)
-            self.sock.listen(5)
+            sock = socket.socket()
+            sock.bind((self.host, self.port))
+            sock.settimeout(0)
+            sock.listen(5)
             logging.info(f'Server started with { self.host }:{ self.port }')
 
             while True:
                 try:
-                    client, address = self.sock.accept()
+                    client, address = sock.accept()
                     logging.info(f'Client detected { address }')
                     self.connections.append(client)
                 except Exception:
