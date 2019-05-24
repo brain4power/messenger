@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 from handlers import handle_default_request
 import settings
 
-from verifiers.server_verifier import ServerVerifier
+from verifiers.server_verifier import ServerVerifier, PortVerifier
 
 from settings import (
     ENCODING_NAME, HOST,
@@ -52,14 +52,18 @@ logging.basicConfig(
 
 
 class Server(metaclass=ServerVerifier):
-    def __init__(self, host, port, buffersize):
+    port = PortVerifier()
+
+    def __init__(self, host, buffersize):
         self.requests = []
         self.connections = []
         self.host = host
-        self.port = port
+        # self.port = PortVerifier()
         self.buffersize = buffersize
 
-    def run_server(self):
+    def run_server(self, port=None):
+        if port:
+            self.port = port
 
         def read_client_data(client, requests, buffersize):
             b_request = client.recv(buffersize)
@@ -73,7 +77,7 @@ class Server(metaclass=ServerVerifier):
             self.sock.bind((self.host, self.port))
             self.sock.settimeout(0)
             self.sock.listen(5)
-            logging.info(f'Server started with { host }:{ port }')
+            logging.info(f'Server started with { self.host }:{ self.port }')
 
             while True:
                 try:
@@ -111,5 +115,5 @@ class Server(metaclass=ServerVerifier):
 
 
 if __name__ == '__main__':
-    server = Server(host, port, buffersize)
-    server.run_server()
+    server = Server(host, buffersize)
+    server.run_server(port)
