@@ -14,6 +14,7 @@ from settings import (
     PORT, BUFFERSIZE
 )
 
+from verifiers.client_verifier import ClientVerifier
 
 host = HOST
 port = PORT
@@ -38,27 +39,40 @@ if args.config:
         encoding_name = config.get('encoding_name') or ENCODING_NAME
         buffersize = config.get('buffersize') or BUFFERSIZE
 
-try:
-    sock = socket.socket()
-    sock.connect((host, port))
-    print(f'Client started with { host }:{ port }')
 
-    if args.mode == 'w':
+class Client(metaclass=ClientVerifier):
+    def __init__(self, host, port, buffersize):
+        self.host = host
+        self.port = port
+        self.buffersize = buffersize
 
-        while True:
-            value = input('Enter data to send:')
-            response = {
-                'action': 'echo',
-                'time': datetime.now().timestamp(),
-                'data': value
-            }
-            s_response = json.dumps(response)
-            b_response = s_response.encode(encoding_name)
-            sock.send(b_response)
+    def run_client(self):
+        try:
+            sock = socket.socket()
+            sock.connect((self.host, self.port))
+            print(f'Client started with { self.host }:{ self.port }')
 
-    else:
-        while True:
-            data = sock.recv(buffersize)
-            print(data.decode(encoding_name))
-except KeyboardInterrupt:
-    print('Client closed')
+            if args.mode == 'w':
+
+                while True:
+                    value = input('Enter data to send:')
+                    response = {
+                        'action': 'echo',
+                        'time': datetime.now().timestamp(),
+                        'data': value
+                    }
+                    s_response = json.dumps(response)
+                    b_response = s_response.encode(encoding_name)
+                    sock.send(b_response)
+
+            else:
+                while True:
+                    data = sock.recv(self.buffersize)
+                    print(data.decode(encoding_name))
+        except KeyboardInterrupt:
+            print('Client closed')
+
+
+if __name__ == '__main__':
+    client = Client(host, port, buffersize)
+    client.run_client()
