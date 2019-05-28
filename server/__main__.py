@@ -54,7 +54,7 @@ logging.basicConfig(
 class Server(metaclass=ServerVerifier):
     port = PortVerifier()
 
-    def __init__(self, host, buffersize):
+    def __init__(self, host, buffersize=1024):
         self.requests = []
         self.connections = []
         self.host = host
