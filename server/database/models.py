@@ -19,6 +19,10 @@ class User(Base):
         self.information = information
 
     @classmethod
+    def get_user_id_by_login(cls, session, login):
+        return session.query(cls).filter(cls.login == login).one()
+
+    @classmethod
     def get_all_users(cls, session):
         return session.query(cls).all()
 
