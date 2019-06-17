@@ -51,7 +51,7 @@ class UserContact(Base):
 
     @classmethod
     def del_contact(cls, session, owner_id, contact_id):
-        obj = session.query(cls.contact_id).filter(cls.owner_id == owner_id and contact_id == contact_id).one()
+        obj = session.query(cls.contact_id).filter(cls.owner_id == owner_id and cls.contact_id == contact_id).one()
         session.delete(obj)
 
 
