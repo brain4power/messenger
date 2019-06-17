@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from datetime import datetime
 
-engine = create_engine('sqlite:///server.sqlite', echo=True)
+engine = create_engine('sqlite:///server.sqlite')
 Base = declarative_base()
 
 
@@ -24,7 +24,8 @@ class User(Base):
 
     @classmethod
     def get_all_users(cls, session):
-        return session.query(cls).all()
+        data = session.query(cls).all()
+        return data
 
     def __repr__(self):
         return '{}'.format(self.login)
@@ -43,6 +44,15 @@ class UserContact(Base):
     @classmethod
     def get_user_contacts(cls, session, owner_id):
         return session.query(cls.contact_id).filter(cls.owner_id == owner_id).one()
+
+    @classmethod
+    def add_contact(cls, session, owner_id, contact_id):
+        session.add(UserContact(owner_id, contact_id))
+
+    @classmethod
+    def del_contact(cls, session, owner_id, contact_id):
+        obj = session.query(cls.contact_id).filter(cls.owner_id == owner_id and contact_id == contact_id).one()
+        session.delete(obj)
 
 
 class UserHistory(Base):

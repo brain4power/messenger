@@ -1,5 +1,6 @@
 from functools import reduce
 from settings import INSTALLED_MODULES
+from pprint import pprint
 
 
 def get_server_routes():
@@ -19,8 +20,8 @@ def get_server_routes():
 
 
 def resolve(action, routes=None):
-    routes_mapping = {
-        route[0]['action']: route[0]['controller']
-        for route in routes or get_server_routes()
-    }
+    routes_mapping = {}
+    for route in routes or get_server_routes():
+        for sub_route in route:
+            routes_mapping[sub_route['action']] = sub_route['controller']
     return routes_mapping.get(action, None)

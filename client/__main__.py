@@ -57,7 +57,7 @@ class Client(metaclass=ClientVerifier):
                 while True:
                     value = input('Enter data to send:')
                     response = {
-                        'action': 'echo',
+                        'action': 'get_all_users',
                         'time': datetime.now().timestamp(),
                         'data': value
                     }
