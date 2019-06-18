@@ -68,6 +68,7 @@ class Server(metaclass=ServerVerifier):
             b_request = client.recv(buffersize)
             requests.append(b_request)
 
+
         def write_client_data(client, b_response):
             client.send(b_response)
 
@@ -86,9 +87,12 @@ class Server(metaclass=ServerVerifier):
                 except Exception:
                     pass
 
-                rlist, wlist, xlist = select.select(
-                    self.connections, self.connections, self.connections, 0
-                )
+                try:
+                    rlist, wlist, xlist = select.select(
+                        self.connections, self.connections, self.connections, 0
+                    )
+                except Exception as e:
+                    pass
 
                 for r_client in rlist:
                     thread = threading.Thread(
@@ -96,13 +100,19 @@ class Server(metaclass=ServerVerifier):
                         args=(r_client, self.requests, self.buffersize)
                     )
                     thread.start()
-
+                # if wlist:
+                #     print('wlist: ', wlist)
                 if self.requests:
                     b_request = self.requests.pop()
                     if b_request:
                         b_response = handle_default_request(b_request)
 
                         for w_client in wlist:
+                            try:
+                                w_client.send(r'ping')
+                            except:
+                                self.connections.remove(w_client)
+
                             thread = threading.Thread(
                                 target=write_client_data,
                                 args=(w_client, b_response)
